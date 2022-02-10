@@ -1,115 +1,262 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:dio/dio.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'screens/card_app.dart';
+import 'screens/button_list_horizontal.dart';
+import 'screens/svg_button_bar.dart';
+
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        title: 'Three Astronauts',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(fontFamily: 'Poppins'),
+        home: const Home()
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomeState createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomeState extends State<Home> {
+  final String url = "https://innovasalud.com.ve";
+  final String recordsPerPage = '?recordsPerPage=-1';
+  List doctors = [];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  getStateDoctor() async {
+    var response = await Dio().get(url + "/api/medicos" + recordsPerPage);
+    return response.data['data'];
+  }
+
+  @override
+  void initState() {
+    getStateDoctor().then((data) {
+      setState(() {
+        doctors = data;
+        //print(doctors.toString());
+      });
     });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    Size size = MediaQuery.of(context).size;
+    double height = size.height;
+    double width = size.width;
+    const paddingListH =
+        EdgeInsets.only(top: 5.0, bottom: 15.0, left: 6.0, right: 6.0);
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      body: Container(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 15.0),
+          child: Column(
+            children: [
+              // TODO: Heading
+              Container(
+                decoration: const BoxDecoration(color: Colors.white),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset('images/nasa.png', width: width * 0.28),
+                    Row(
+                      children: [
+                        FloatingActionButton(
+                          backgroundColor: Colors.white,
+                          onPressed: () {},
+                          child: const Icon(
+                            MdiIcons.bellOutline,
+                            color: Colors.black,
+                          ),
+                          mini: true,
+                        ),
+                        FloatingActionButton(
+                          backgroundColor: Colors.white,
+                          onPressed: () {},
+                          child: const Icon(MdiIcons.cogOutline,
+                              color: Colors.black),
+                          mini: true,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // TODO: Favorites
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 15.0, vertical: 15.0),
+                child: SizedBox(
+                  height: height * 0.05,
+                  child: Material(
+                    color: Colors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          "Favorites",
+                          style: TextStyle(
+                            fontSize: 32.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        FloatingActionButton.small(
+                          onPressed: null,
+                          child: Icon(MdiIcons.plus, color: Colors.black),
+                          backgroundColor: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // TODO: List Horizontal => Widget
+              Container(
+                color: const Color(0xfffbfbfb),
+                height: height * 0.08,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: const <Widget>[
+                    ButtonListHorizontal(
+                      paddingListH: paddingListH,
+                      textButton: "All",
+                      backgroundColorButton: Colors.white,
+                    ),
+                    ButtonListHorizontal(
+                      paddingListH: paddingListH,
+                      textButton: "Happy Hours",
+                      backgroundColorButton: Color(0xffff7723),
+                    ),
+                    ButtonListHorizontal(
+                      paddingListH: paddingListH,
+                      textButton: "Drinks",
+                      backgroundColorButton: Colors.white,
+                    ),
+                    ButtonListHorizontal(
+                      paddingListH: paddingListH,
+                      textButton: "Beer",
+                      backgroundColorButton: Colors.white,
+                    ),
+                    ButtonListHorizontal(
+                      paddingListH: paddingListH,
+                      textButton: "Others",
+                      backgroundColorButton: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 15.0, vertical: 10.0),
+                child: SizedBox(
+                  height: height * 0.05,
+                  child: Material(
+                    color: Colors.white,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          "Happy Hours",
+                          style: TextStyle(
+                            fontSize: 25.0,
+                              fontWeight: FontWeight.w600
+                          ),
+                        ),
+                        FloatingActionButton.small(
+                          onPressed: null,
+                          child:
+                              Icon(Icons.delete_outlined, color: Colors.black),
+                          backgroundColor: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // TODO: List Vertical => Widget
+              SizedBox(
+                height: height * 0.5,
+                child: doctors.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: doctors.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: CardApp(
+                              imgCard: NetworkImage(
+                                  "$url/${doctors[index]['foto']}"),
+                              titleCard: doctors[index]['nombre'],
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(child: CircularProgressIndicator()),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      persistentFooterButtons: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            InkWell(
+              onTap: (){},
+              child: const SvgButtonBar(
+                  imgSvg: 'images/home.svg'
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            InkWell(
+              onTap: (){},
+              child: const SvgButtonBar(
+                  imgSvg: 'images/calendar.svg'
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: const SvgButtonBar(
+                  imgSvg: 'images/search.svg'
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: const SvgButtonBar(
+                imgSvg: 'images/heart.svg',
+                colorSvg: Colors.black,
+              ),
+            ),
+            const Text(
+              "Favorites",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20.0,
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ],
     );
   }
 }
